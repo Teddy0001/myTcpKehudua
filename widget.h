@@ -39,5 +39,8 @@ private slots:
     void on_pushButton_5_clicked();
     void on_lineEdit_4_textChanged(const QString &arg1);
     void on_comboBox_currentIndexChanged(int index);
+    void on_lineEdit_2_textChanged(const QString &arg1);
+    void on_lineEdit_3_textChanged(const QString &arg1);
+    void on_pushButton_6_clicked();
 };
 #endif // WIDGET_H

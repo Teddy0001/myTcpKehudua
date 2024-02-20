@@ -30,9 +30,17 @@ Widget::Widget(QWidget *parent)
     // 在函数内部创建 QSettings 对象并使用
     QSettings settings("MyCompany", "MyApp");
     QString savedName = settings.value("UserName").toString();
+    QString savedAdddress = settings.value("address").toString();
+    QString savedPort = settings.value("port").toString();
 
     if (!savedName.isEmpty()) {
         ui->lineEdit_4->setText(savedName);
+    }
+    if (!savedAdddress.isEmpty()) {
+        ui->lineEdit_2->setText(savedAdddress);
+    }
+    if (!savedPort.isEmpty()) {
+        ui->lineEdit_3->setText(savedPort);
     }
 
     connect(tcpSocket, &QTcpSocket::readyRead, this, &Widget::receiveMessages);
@@ -84,8 +92,8 @@ void Widget::receiveMessages()
     } else if(receivedString.startsWith("Removename:")) {
 
         qDebug() <<"筛选之后的消息："<< message <<endl;
-            // 使用 split 方法分割字符串，以逗号作为分隔符
-            QStringList parts = receivedString.split(',');
+        // 使用 split 方法分割字符串，以逗号作为分隔符
+        QStringList parts = receivedString.split(',');
         // 检查分割后的列表中是否至少有两个元素
         if (parts.size() >= 2) {
             // 提取第二个元素，即用户名
@@ -107,7 +115,16 @@ void Widget::receiveMessages()
 
         }
 
-    } else {
+    }  else if(receivedString.startsWith("refresh:")) {
+        // 使用 split 方法分割字符串，以逗号作为分隔符
+        QStringList parts = receivedString.split(':');
+        // 检查分割后的列表中是否至少有两个元素
+        if (parts.size() >= 2) {
+            // 提取第二个元素，即用户名
+            QString username1 = parts[1].trimmed(); // trimmed() 去除字符串前后的空白
+            ui->comboBox->addItem(username1);
+        }
+    }else {
         //接收消息
         ui->textBrowser->append("服务端：" + receivedString);
     }
@@ -251,5 +268,37 @@ void Widget::on_lineEdit_4_textChanged(const QString &arg1)
 void Widget::on_comboBox_currentIndexChanged(int index)
 {
 
+}
+
+
+void Widget::on_lineEdit_2_textChanged(const QString &arg1)
+{
+    // 当文本框内容变化时保存
+    QSettings settings("MyCompany", "MyApp");
+    QString ipaddr = ui->lineEdit_2->text(); // 获取输入框中的文本
+    settings.setValue("address", ipaddr);
+}
+
+
+void Widget::on_lineEdit_3_textChanged(const QString &arg1)
+{
+    // 当文本框内容变化时保存
+    QSettings settings("MyCompany", "MyApp");
+    QString port = ui->lineEdit_3->text(); // 获取输入框中的文本
+    settings.setValue("port", port);
+}
+
+
+void Widget::on_pushButton_6_clicked()
+{
+    ui->comboBox->clear();
+    //发送消息
+    if (tcpSocket->state() == QAbstractSocket::ConnectedState)
+    {
+        QString sendMessage = QString("客户端列表刷新");
+        tcpSocket->write(sendMessage.toUtf8());
+    } else {
+        ui->textBrowser->append("请先与服务器连接");
+    }
 }
 
